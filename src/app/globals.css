@@ -1,0 +1,225 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Brand colors ----
+     オレンジは店の扉・ソファに馴染む、少しくすんだ温かいオレンジ。
+     背景は白〜生成りを基調にし、オレンジはアクセントに限定する。 */
+  --color-ink: #33261d; /* 焦げ茶（本文） */
+  --color-espresso: #4c3a2d; /* 濃いブラウン */
+  --color-orange: #d1742f; /* メインオレンジ（面・装飾用） */
+  --color-orange-deep: #b35c1e; /* 濃いオレンジ（大きめ文字・ホバー） */
+  --color-orange-text: #9a4d15; /* 明るい背景に載せる小さな文字用（AA確保） */
+  --color-orange-soft: #f3dcc4; /* 淡いオレンジ（面） */
+  --color-wood: #a97c50; /* 木の色 */
+  --color-wood-deep: #6f5136; /* 濃い木の色（小さな文字OK） */
+  --color-ivory: #f8f4ea; /* 生成り（ページ背景） */
+  --color-ivory-deep: #f0e9d8; /* 生成り（やや濃い面） */
+  --color-paper: #fcfaf4; /* ほぼ白の面 */
+
+  /* ---- Fonts ----
+     ロゴの丸みに合わせ、見出しは丸ゴシック。本文は読みやすい角ゴシック。 */
+  --font-heading: var(--font-zen-maru), "Hiragino Maru Gothic ProN",
+    "Yu Gothic", "Noto Sans JP", sans-serif;
+  --font-gothic: var(--font-zen-kaku), "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    "Noto Sans JP", sans-serif;
+  --font-en: var(--font-caveat), "Segoe Script", cursive;
+
+  /* ---- Easing ---- */
+  --ease-quiet: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ================================================================
+   Base
+================================================================ */
+
+html {
+  scroll-padding-top: 6rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background-color: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-gothic);
+  font-feature-settings: "palt";
+  letter-spacing: 0.03em;
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-orange) 30%, transparent);
+  color: var(--color-ink);
+}
+
+/* フォーカスリングは背景の明暗に応じて色を変える */
+:root {
+  --focus-ring: var(--color-orange-deep);
+}
+
+.bg-ink,
+.bg-espresso {
+  --focus-ring: var(--color-orange-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ================================================================
+   Texture — 紙のような微細な質感
+   （@layer components に入れないと position ユーティリティを打ち消す）
+================================================================ */
+
+@layer components {
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 240px 240px;
+  }
+
+  /* 記事本文（react-markdown の出力に適用） */
+  .prose-blog h2 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    line-height: 1.6;
+    margin-top: 2.8em;
+    margin-bottom: 1em;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  }
+
+  .prose-blog h3 {
+    font-family: var(--font-heading);
+    font-size: 1.12rem;
+    margin-top: 2.2em;
+    margin-bottom: 0.8em;
+    padding-left: 0.75em;
+    border-left: 3px solid var(--color-orange);
+  }
+
+  .prose-blog p {
+    margin-bottom: 1.4em;
+  }
+
+  .prose-blog a {
+    color: var(--color-orange-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose-blog a:hover {
+    color: var(--color-orange-deep);
+  }
+
+  .prose-blog ul,
+  .prose-blog ol {
+    margin: 1.4em 0;
+    padding-left: 1.4em;
+  }
+
+  .prose-blog ul {
+    list-style: disc;
+  }
+
+  .prose-blog ol {
+    list-style: decimal;
+  }
+
+  .prose-blog li {
+    margin-bottom: 0.4em;
+  }
+
+  .prose-blog strong {
+    font-weight: 600;
+  }
+
+  .prose-blog blockquote {
+    margin: 1.6em 0;
+    padding: 0.2em 1.2em;
+    border-left: 3px solid var(--color-wood);
+    color: var(--color-wood-deep);
+  }
+}
+
+/* ================================================================
+   Reveal — スクロールに合わせた控えめな出現
+   （JSが無効でも本文が見えるよう .js 配下に限定）
+================================================================ */
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(1.4rem);
+  transition:
+    opacity 1s var(--ease-quiet),
+    transform 1s var(--ease-quiet);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.js .reveal.is-inview {
+  opacity: 1;
+  transform: none;
+}
+
+/* ================================================================
+   Hero — 初回表示のフェード（JS不使用）
+================================================================ */
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-fade {
+  animation: hero-fade-up 1.2s var(--ease-quiet) both;
+  animation-delay: var(--hero-delay, 0s);
+}
+
+/* ================================================================
+   Reduced motion
+================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal,
+  .reveal,
+  .hero-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ================================================================
+   Utilities
+================================================================ */
+
+.writing-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.hairline-b {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
