@@ -50,6 +50,24 @@ export default function MorningLunchPage() {
               sizes="(min-width: 768px) 50vw, 100vw"
               className="h-auto w-full"
             />
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Image
+                src={photos.morningToast.src}
+                alt={photos.morningToast.alt}
+                width={photos.morningToast.width}
+                height={photos.morningToast.height}
+                sizes="(min-width: 768px) 25vw, 50vw"
+                className="h-auto w-full"
+              />
+              <Image
+                src={photos.hotcakeClose.src}
+                alt={photos.hotcakeClose.alt}
+                width={photos.hotcakeClose.width}
+                height={photos.hotcakeClose.height}
+                sizes="(min-width: 768px) 25vw, 50vw"
+                className="h-auto w-full"
+              />
+            </div>
           </Reveal>
           <Reveal delay={0.1}>
             <SectionHeading en="Morning 8:00 - 11:00">

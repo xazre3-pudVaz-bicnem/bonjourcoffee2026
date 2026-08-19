@@ -28,10 +28,10 @@ export default function IntroSection() {
         </Reveal>
         <Reveal delay={0.15} className="relative">
           <Image
-            src={photos.exterior.src}
-            alt={photos.exterior.alt}
-            width={photos.exterior.width}
-            height={photos.exterior.height}
+            src={photos.exteriorWide.src}
+            alt={photos.exteriorWide.alt}
+            width={photos.exteriorWide.width}
+            height={photos.exteriorWide.height}
             sizes="(min-width: 768px) 40vw, 100vw"
             className="h-auto w-full"
           />

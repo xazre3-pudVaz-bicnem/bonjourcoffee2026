@@ -15,7 +15,7 @@ export default function Hero() {
         priority
         quality={82}
         sizes="100vw"
-        className="object-cover object-[62%_center]"
+        className="object-cover object-[38%_center]"
       />
       {/* 文字の可読性のための控えめなグラデーション */}
       <div

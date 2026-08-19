@@ -14,15 +14,27 @@ export type Photo = {
 export const photos = {
   hero: {
     src: "/images/hero.jpg",
-    width: 1280,
-    height: 853,
-    alt: "銅板で焼いたホットケーキに小豆と抹茶アイスを添えた、ぼんじゅうる珈琲の一皿",
+    width: 2048,
+    height: 1365,
+    alt: "オレンジ色のソファとカウンター席が並ぶ、木のぬくもりのあるぼんじゅうる珈琲の店内",
   },
   exterior: {
     src: "/images/exterior.jpg",
     width: 960,
     height: 1280,
-    alt: "白い板張りの壁に丸い木製看板が掛かる、ぼんじゅうる珈琲の入口",
+    alt: "白い板張りの壁に丸い木製看板とランプが掛かる、ぼんじゅうる珈琲の外観",
+  },
+  exteriorWide: {
+    src: "/images/exterior-wide.jpg",
+    width: 2048,
+    height: 1365,
+    alt: "赤茶色の瓦屋根と白い板張りの壁のぼんじゅうる珈琲の建物全景",
+  },
+  counter: {
+    src: "/images/counter.jpg",
+    width: 2048,
+    height: 1365,
+    alt: "グラス棚とレンガ壁のあるカウンター席と、窓際のオレンジ色のベンチシート",
   },
   interior1: {
     src: "/images/interior-1.jpg",
@@ -76,19 +88,25 @@ export const photos = {
     src: "/images/coffee-beans.jpg",
     width: 1280,
     height: 960,
-    alt: "珈琲豆を入れたガラスのキャニスターが並ぶ棚",
+    alt: "Bonjourのロゴが入った珈琲豆のガラス瓶と木のスコップ",
   },
   morning: {
     src: "/images/morning.jpg",
-    width: 1280,
-    height: 853,
+    width: 2048,
+    height: 1365,
+    alt: "おにぎり2種と唐揚げ、漬物、スープがそろったモーニングプレート",
+  },
+  morningToast: {
+    src: "/images/morning-toast.jpg",
+    width: 2048,
+    height: 1365,
     alt: "バターが溶けるバインミートーストとゆで卵のモーニング",
   },
   banhmiGroup: {
     src: "/images/banhmi-group.jpg",
     width: 960,
     height: 1280,
-    alt: "木のトレイに並んだ6種類のバインミー",
+    alt: "木のトレイに盛り合わせた6種類のバインミー",
   },
   banhmiTeriyaki: {
     src: "/images/banhmi-teriyaki.jpg",
@@ -100,7 +118,7 @@ export const photos = {
     src: "/images/banhmi-set.jpg",
     width: 960,
     height: 1280,
-    alt: "バインミーと珈琲、クリームソーダを並べたテーブル",
+    alt: "バインミーやおにぎり、珈琲、クリームソーダが並ぶテーブル",
   },
   onigiri: {
     src: "/images/onigiri.jpg",
@@ -116,20 +134,20 @@ export const photos = {
   },
   curry: {
     src: "/images/curry.jpg",
-    width: 1280,
-    height: 853,
+    width: 2048,
+    height: 1365,
     alt: "ゆで卵をのせた唐揚げカレー",
   },
   hotcake: {
     src: "/images/hotcake.jpg",
-    width: 1280,
-    height: 853,
+    width: 2048,
+    height: 1365,
     alt: "苺とホイップを添えた昔ながらのホットケーキ",
   },
   hotcakeClose: {
     src: "/images/hotcake-close.jpg",
-    width: 1280,
-    height: 853,
+    width: 2048,
+    height: 1365,
     alt: "苺ソースがかかったホットケーキの寄り",
   },
   hotcakeToppings: {
@@ -140,8 +158,8 @@ export const photos = {
   },
   cakeChocolate: {
     src: "/images/cake-chocolate.jpg",
-    width: 1280,
-    height: 853,
+    width: 2048,
+    height: 1365,
     alt: "ココアパウダーをまとったチョコレートムースケーキ",
   },
   coffeeJelly: {

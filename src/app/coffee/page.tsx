@@ -127,9 +127,19 @@ export default function CoffeePage() {
 
       {/* 日常の一杯 */}
       <section className="grain bg-espresso py-16 text-ivory sm:py-24">
-        <div className="mx-auto max-w-3xl px-5 text-center">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 md:grid-cols-2 md:gap-16">
           <Reveal>
-            <SectionHeading en="Everyday coffee" tone="dark" align="center">
+            <Image
+              src={photos.counter.src}
+              alt={photos.counter.alt}
+              width={photos.counter.width}
+              height={photos.counter.height}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="h-auto w-full"
+            />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <SectionHeading en="Everyday coffee" tone="dark">
               特別な日ではなく、毎日のための珈琲
             </SectionHeading>
             <div className="mt-8 space-y-4 text-sm leading-loose text-ivory/90 sm:text-base">
