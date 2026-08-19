@@ -15,8 +15,8 @@ const NAV = [
   { href: "/menu", label: "メニュー" },
   { href: "/coffee", label: "珈琲へのこだわり" },
   { href: "/morning-lunch", label: "モーニング・ランチ" },
-  { href: "/about", label: "ぼんじゅうる珈琲について" },
-  { href: "/access", label: "店舗情報・アクセス" },
+  { href: "/about", label: "お店について" },
+  { href: "/access", label: "アクセス" },
   { href: "/blog", label: "ブログ" },
 ];
 
@@ -38,21 +38,27 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
         <Link
           href="/"
-          className="flex items-baseline gap-2 font-heading text-lg font-bold tracking-wide text-ink"
+          className="flex items-baseline gap-2 whitespace-nowrap font-heading text-lg font-bold tracking-wide text-ink"
         >
           <span>ぼんじゅうる珈琲</span>
-          <span aria-hidden className="font-en text-base text-orange-deep">
+          <span
+            aria-hidden
+            className="hidden font-en text-base text-orange-deep xl:inline"
+          >
             Bonjour coffee
           </span>
         </Link>
 
         {/* PCナビ */}
-        <nav aria-label="メイン" className="hidden items-center gap-6 lg:flex">
+        <nav
+          aria-label="メイン"
+          className="hidden items-center gap-5 lg:flex xl:gap-6"
+        >
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`text-sm transition-colors hover:text-orange-deep ${
+              className={`whitespace-nowrap text-[13px] transition-colors hover:text-orange-deep xl:text-sm ${
                 pathname?.startsWith(item.href) ? "text-orange-text" : "text-ink"
               }`}
             >
@@ -70,7 +76,7 @@ export default function Header() {
           </a>
           <a
             href={shop.telLink}
-            className="flex items-center gap-1.5 bg-orange px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-deep"
+            className="flex items-center gap-1.5 whitespace-nowrap bg-orange px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-deep"
           >
             <PhoneIcon className="h-4 w-4" />
             <span>{shop.tel}</span>
@@ -107,10 +113,12 @@ export default function Header() {
 
       {/* モバイルナビ */}
       {open ? (
+        // headerのbackdrop-blurがfixedの包含ブロックになるため、
+        // fixedではなくheader基準のabsoluteで全画面に広げる
         <nav
           id="mobile-nav"
           aria-label="メイン"
-          className="grain fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto bg-ivory lg:hidden"
+          className="grain absolute inset-x-0 top-full z-40 h-[calc(100dvh-4rem)] overflow-y-auto bg-ivory lg:hidden"
         >
           <ul className="px-5 py-6">
             {NAV.map((item) => (

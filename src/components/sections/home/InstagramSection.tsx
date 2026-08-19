@@ -18,8 +18,7 @@ export default function InstagramSection() {
             日々のことは、Instagramで
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-sm leading-loose text-espresso sm:text-base">
-            営業日のカレンダーや、季節のメニュー、お店の日々の様子は
-            公式Instagramでお知らせしています。
+            営業日のカレンダーや、季節のメニュー、お店の日々の様子は公式Instagramでお知らせしています。
           </p>
           <a
             href={shop.instagram}

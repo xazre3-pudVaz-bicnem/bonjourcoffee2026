@@ -12,8 +12,7 @@ export default function NotFound() {
         ページが見つかりません
       </h1>
       <p className="mt-4 max-w-md text-sm leading-loose text-espresso">
-        お探しのページは移動したか、削除された可能性があります。
-        よろしければ、珈琲でも飲みながらトップページからお探しください。
+        お探しのページは移動したか、削除された可能性があります。よろしければ、珈琲でも飲みながらトップページからお探しください。
       </p>
       <Link
         href="/"
