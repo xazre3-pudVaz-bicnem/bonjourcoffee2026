@@ -44,7 +44,8 @@ export const shop = {
   instagram: "https://www.instagram.com/bonjourcoffee2026/",
   instagramId: "@bonjourcoffee2026",
 
-  url: "https://bonjourcoffee2026.com",
+  /** 正式ドメイン（wwwあり）。canonical・OGP・sitemap・JSON-LDすべての基準 */
+  url: "https://www.bonjourcoffee2026.com",
 
   googleMapsUrl:
     "https://www.google.com/maps/search/?api=1&query=" +

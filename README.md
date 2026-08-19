@@ -2,7 +2,7 @@
 
 岡山県倉敷市玉島柏島の喫茶店「ぼんじゅうる珈琲」の公式サイト。
 
-- 本番URL（予定）: https://bonjourcoffee2026.com
+- 本番URL: https://www.bonjourcoffee2026.com （www あり側に統一）
 - スタック: Next.js 16（App Router）+ TypeScript + Tailwind CSS v4
 - ブログ: Claude API（Haiku）+ GitHub Actions で毎日1記事自動生成
 
@@ -57,5 +57,7 @@ push により Vercel が自動デプロイして公開される。手動実行�
 ## デプロイ
 
 GitHub main ブランチ → Vercel 自動デプロイ。
-本番ドメイン接続後も `src/data/shop.ts` の `url` は https://bonjourcoffee2026.com のままでよい
-（canonical・OGP・sitemap・JSON-LD すべてこの値を基準にしている）。
+正式ドメインは https://www.bonjourcoffee2026.com（`src/data/shop.ts` の `url` が
+canonical・OGP・sitemap・JSON-LD すべての基準）。
+Vercel のドメイン設定では www.bonjourcoffee2026.com をプライマリにし、
+bonjourcoffee2026.com（非www）からは www 側へリダイレクトさせること。

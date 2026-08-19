@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,17 +37,15 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-ink/10 bg-paper/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
-        <Link
-          href="/"
-          className="flex items-baseline gap-2 whitespace-nowrap font-heading text-lg font-bold tracking-wide text-ink"
-        >
-          <span>ぼんじゅうる珈琲</span>
-          <span
-            aria-hidden
-            className="hidden font-en text-base text-orange-deep xl:inline"
-          >
-            Bonjour coffee
-          </span>
+        <Link href="/" className="shrink-0">
+          <Image
+            src="/images/logo-header.png"
+            alt="ぼんじゅうる珈琲"
+            width={920}
+            height={255}
+            priority
+            className="h-9 w-auto sm:h-10"
+          />
         </Link>
 
         {/* PCナビ */}
