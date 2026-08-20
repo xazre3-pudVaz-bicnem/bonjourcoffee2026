@@ -60,12 +60,12 @@ export default function MorningLunchPage() {
                 className="h-auto w-full"
               />
               <Image
-                src={photos.hotcakeClose.src}
-                alt={photos.hotcakeClose.alt}
-                width={photos.hotcakeClose.width}
-                height={photos.hotcakeClose.height}
+                src={photos.hotcakePlain.src}
+                alt={photos.hotcakePlain.alt}
+                width={photos.hotcakePlain.width}
+                height={photos.hotcakePlain.height}
                 sizes="(min-width: 768px) 25vw, 50vw"
-                className="h-auto w-full"
+                className="aspect-[3/2] h-auto w-full object-cover"
               />
             </div>
           </Reveal>

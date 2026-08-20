@@ -94,7 +94,7 @@ export const photos = {
     src: "/images/morning.jpg",
     width: 2048,
     height: 1365,
-    alt: "おにぎり2種と唐揚げ、漬物、スープがそろったモーニングプレート",
+    alt: "おにぎり2種に漬物とスープを添えた選べるモーニング",
   },
   morningToast: {
     src: "/images/morning-toast.jpg",
@@ -110,9 +110,9 @@ export const photos = {
   },
   banhmiTeriyaki: {
     src: "/images/banhmi-teriyaki.jpg",
-    width: 960,
-    height: 1280,
-    alt: "一番人気の照り焼きたまごバインミーとフライドポテト",
+    width: 2048,
+    height: 1365,
+    alt: "一番人気の照り焼きたまごバインミー",
   },
   banhmiSet: {
     src: "/images/banhmi-set.jpg",
@@ -132,6 +132,12 @@ export const photos = {
     height: 1280,
     alt: "たくあんを添えた焼きおにぎり",
   },
+  onigiriTamago: {
+    src: "/images/onigiri-tamago.jpg",
+    width: 1365,
+    height: 2048,
+    alt: "とろりとした卵黄がのぞく卵黄そぼろおにぎり",
+  },
   curry: {
     src: "/images/curry.jpg",
     width: 2048,
@@ -148,7 +154,13 @@ export const photos = {
     src: "/images/hotcake-close.jpg",
     width: 2048,
     height: 1365,
-    alt: "苺ソースがかかったホットケーキの寄り",
+    alt: "小豆と抹茶アイスを添えたホットケーキの寄り",
+  },
+  hotcakePlain: {
+    src: "/images/hotcake-plain.jpg",
+    width: 757,
+    height: 757,
+    alt: "バターとホイップ、シロップを添えた昔ながらのホットケーキ",
   },
   hotcakeToppings: {
     src: "/images/hotcake-toppings.jpg",

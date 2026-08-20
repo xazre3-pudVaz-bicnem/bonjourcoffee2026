@@ -154,7 +154,12 @@ export default function MenuPage() {
                 key={item.name}
                 className="hairline-b flex items-baseline justify-between gap-4 py-3"
               >
-                <p className="text-sm font-medium">{item.name}</p>
+                <div>
+                  <p className="text-sm font-medium">{item.name}</p>
+                  {item.note ? (
+                    <p className="mt-0.5 text-xs text-wood-deep">※{item.note}</p>
+                  ) : null}
+                </div>
                 <Price price={item.price} />
               </li>
             ))}

@@ -24,13 +24,14 @@ const PICKS: Pick[] = [
     name: "おにぎり 卵黄そぼろ",
     price: "450円",
     caption: "喫茶店では少しめずらしい、種類豊富なおにぎりの看板メニュー。",
-    photo: photos.onigiriYaki,
+    photo: photos.onigiriTamago,
   },
   {
     name: "昔ながらのホットケーキ",
     price: "テイクアウト2枚 790円",
-    caption: "銅板でじっくり焼き上げる、どこか懐かしい甘さ。",
-    photo: photos.hotcakeClose,
+    caption:
+      "銅板でじっくり焼き上げる、どこか懐かしい甘さ。※テイクアウトはホイップクリームが付きません。",
+    photo: photos.hotcakePlain,
   },
 ];
 

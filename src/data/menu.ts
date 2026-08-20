@@ -61,9 +61,9 @@ export const menuCategories: MenuCategory[] = [
     nameEn: "Coffee",
     lead: "注文をいただいてから一杯ずつハンドドリップで淹れています。アイスコーヒーも店内で仕込んだものです。",
     items: [
-      { name: "ブレンド", price: 460, recommended: true },
-      { name: "アメリカン", price: 460 },
-      { name: "アイスコーヒー", price: 520, note: "店内仕込み" },
+      { name: "ブレンド", price: 560, recommended: true },
+      { name: "アメリカン", price: 560 },
+      { name: "アイスコーヒー", price: 620, note: "店内仕込み" },
       { name: "ナポリ", price: 620 },
       { name: "コロンビア", price: 700 },
       { name: "カフェインレス（HOT／ICE）", price: 620 },
@@ -80,7 +80,7 @@ export const menuCategories: MenuCategory[] = [
       { name: "ダージリン", price: 600 },
       { name: "アールグレイ", price: 600 },
       { name: "はちみつ紅茶", price: 670 },
-      { name: "アイスティ", price: 600 },
+      { name: "アイスティ", price: 560 },
       { name: "オレンジジュース", price: 600 },
       { name: "りんごジュース", price: 560 },
       { name: "メロンクリームソーダ", price: 720, recommended: true },
@@ -137,15 +137,16 @@ export const menuCategories: MenuCategory[] = [
     nameEn: "Curry & Side",
     lead: "喫茶店らしい食事メニュー。ランチタイムはもちろん、小腹が空いたときにも。",
     items: [
-      { name: "唐揚げカレー", price: 1190, recommended: true },
-      { name: "ビーフカレー", price: 900 },
-      { name: "白身フライカレー", price: 1090 },
+      { name: "唐揚げカレー", price: 1190, priceNote: "セット 1,590円", recommended: true },
+      { name: "ビーフカレー", price: 900, priceNote: "セット 1,300円" },
+      { name: "白身フライカレー", price: 1090, priceNote: "セット 1,490円" },
       { name: "山盛りフライドポテト", price: 500 },
       { name: "唐揚げ", price: 500 },
       { name: "具沢山サラダ", price: 850 },
       { name: "バインミートースト", price: 400 },
-      { name: "スープ（味噌／コンソメ）", price: 200 },
+      { name: "スープ", price: 200 },
     ],
+    footnotes: ["カレーのセットはドリンク付きです。"],
   },
   {
     id: "hotcake",
@@ -205,7 +206,7 @@ export const takeoutExamples: MenuItem[] = [
   { name: "おにぎり（塩）", price: 250 },
   { name: "おにぎり（卵黄そぼろ・鮭など）", price: 450 },
   { name: "照焼きたまごチキンバインミー", price: 790 },
-  { name: "ホットケーキ プレーン2枚", price: 790 },
+  { name: "ホットケーキ プレーン2枚", price: 790, note: "ホイップクリームなし" },
 ];
 
 /** TOPページの「おすすめ」抜粋 */
