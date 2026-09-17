@@ -40,8 +40,8 @@ export const seasonalCategory: MenuCategory | null = {
   items: [
     {
       name: "明太フランス",
-      price: null,
-      note: "明太子のペーストを塗って香ばしく焼き上げたフランスパン。10月末までの予定",
+      price: 590,
+      note: "明太子のペーストを塗って香ばしく焼き上げたフランスパン。単品のみの販売です。10月末までの予定",
       recommended: true,
     },
   ],

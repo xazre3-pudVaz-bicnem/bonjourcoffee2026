@@ -34,7 +34,7 @@ export default function SeasonalSection() {
             期間限定「{item.name}」はじめました
           </h2>
           <p className="mt-5 text-sm leading-loose text-espresso sm:text-base">
-            明太子のペーストをたっぷり塗って、香ばしく焼き上げたフランスパンです。淹れたての珈琲と一緒に、ぜひ一度お試しください。10月末までの予定です。
+            明太子のペーストをたっぷり塗って、香ばしく焼き上げたフランスパンです。単品590円（税込）。淹れたての珈琲と一緒に、ぜひ一度お試しください。10月末までの予定です。
           </p>
           <Link
             href="/menu#seasonal"
