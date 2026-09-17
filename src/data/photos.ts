@@ -102,6 +102,12 @@ export const photos = {
     height: 1365,
     alt: "バターが溶けるバインミートーストとゆで卵のモーニング",
   },
+  mentaiFrance: {
+    src: "/images/mentai-france.jpg",
+    width: 1280,
+    height: 960,
+    alt: "明太子ペーストを塗って香ばしく焼き上げた期間限定の明太フランス",
+  },
   banhmiGroup: {
     src: "/images/banhmi-group.jpg",
     width: 960,

@@ -28,6 +28,25 @@ export type MenuCategory = {
 export const menuNote =
   "価格はすべて税込です。価格・内容は変更になる場合があります。最新のメニューは店頭または公式Instagramをご確認ください。";
 
+/**
+ * 期間限定メニュー。終了したらこの配列を空にすれば
+ * メニューページ・TOPのお知らせから自動的に消える。
+ */
+export const seasonalCategory: MenuCategory | null = {
+  id: "seasonal",
+  name: "期間限定",
+  nameEn: "Seasonal",
+  lead: "季節のおすすめメニューです。数量・期間限定のため、売り切れの際はご容赦ください。",
+  items: [
+    {
+      name: "明太フランス",
+      price: null,
+      note: "明太子のペーストを塗って香ばしく焼き上げたフランスパン。10月末までの予定",
+      recommended: true,
+    },
+  ],
+};
+
 export const menuCategories: MenuCategory[] = [
   {
     id: "morning",

@@ -44,6 +44,17 @@ const SHOP_FACTS = [
   "駐車場：店舗西側に約10台分",
 ] as const;
 
+/**
+ * 期間限定の事実。validUntil（YYYY-MM-DD）を過ぎると
+ * 自動的にプロンプトから外れ、記事で言及されなくなる。
+ */
+const SEASONAL_FACTS: { fact: string; validUntil: string }[] = [
+  {
+    fact: "期間限定メニュー：明太フランス（明太子のペーストを塗って香ばしく焼き上げたフランスパン）。10月末までの予定",
+    validUntil: "2026-10-31",
+  },
+];
+
 /** 内部リンク（実在するページのみ） */
 const INTERNAL_LINKS = [
   { url: "/coffee", label: "珈琲へのこだわり" },
@@ -233,7 +244,12 @@ async function main() {
   console.log("──────────────────────────────────────────────");
 
   const linkList = INTERNAL_LINKS.map((l) => `- ${l.label}: ${l.url}`).join("\n");
-  const factList = SHOP_FACTS.map((f) => `- ${f}`).join("\n");
+  const activeSeasonalFacts = SEASONAL_FACTS.filter((s) => date <= s.validUntil).map(
+    (s) => s.fact,
+  );
+  const factList = [...SHOP_FACTS, ...activeSeasonalFacts]
+    .map((f) => `- ${f}`)
+    .join("\n");
   const recentTitles = existing
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 20)

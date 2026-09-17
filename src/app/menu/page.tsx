@@ -3,8 +3,19 @@ import Image from "next/image";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import PageHero from "@/components/ui/PageHero";
 import Reveal from "@/components/ui/Reveal";
-import { menuCategories, menuNote, takeoutExamples, takeoutNote } from "@/data/menu";
+import {
+  menuCategories,
+  menuNote,
+  seasonalCategory,
+  takeoutExamples,
+  takeoutNote,
+} from "@/data/menu";
 import { photos, type Photo } from "@/data/photos";
+
+/** 期間限定があれば先頭に表示する */
+const allCategories = seasonalCategory
+  ? [seasonalCategory, ...menuCategories]
+  : menuCategories;
 
 export const metadata: Metadata = {
   title: "メニュー",
@@ -21,6 +32,7 @@ export const metadata: Metadata = {
 
 /** カテゴリごとの添え写真 */
 const CATEGORY_PHOTOS: Record<string, Photo> = {
+  seasonal: photos.mentaiFrance,
   morning: photos.morning,
   coffee: photos.coffeeCups,
   drink: photos.creamSoda,
@@ -57,7 +69,7 @@ export default function MenuPage() {
       {/* カテゴリ内リンク */}
       <nav aria-label="メニューカテゴリ" className="mx-auto max-w-6xl px-5 pt-8">
         <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-          {menuCategories.map((c) => (
+          {allCategories.map((c) => (
             <li key={c.id}>
               <a
                 href={`#${c.id}`}
@@ -71,7 +83,7 @@ export default function MenuPage() {
       </nav>
 
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-14 sm:space-y-28 sm:py-20">
-        {menuCategories.map((category, i) => {
+        {allCategories.map((category, i) => {
           const photo = CATEGORY_PHOTOS[category.id];
           return (
             <section key={category.id} id={category.id} className="scroll-mt-24">

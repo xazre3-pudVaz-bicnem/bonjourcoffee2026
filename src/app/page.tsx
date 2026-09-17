@@ -2,6 +2,7 @@ import Hero from "@/components/sections/home/Hero";
 import IntroSection from "@/components/sections/home/IntroSection";
 import CoffeeSection from "@/components/sections/home/CoffeeSection";
 import TimeSection from "@/components/sections/home/TimeSection";
+import SeasonalSection from "@/components/sections/home/SeasonalSection";
 import RecommendSection from "@/components/sections/home/RecommendSection";
 import StorySection from "@/components/sections/home/StorySection";
 import GallerySection from "@/components/sections/home/GallerySection";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <IntroSection />
       <CoffeeSection />
       <TimeSection />
+      <SeasonalSection />
       <RecommendSection />
       <StorySection />
       <GallerySection />
