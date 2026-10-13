@@ -23,7 +23,15 @@ export default function ShopInfo({ headingLevel = "h2" }: { headingLevel?: "h2" 
     },
     {
       label: "営業時間",
-      value: `${shop.hours}（ラストオーダー ${shop.lastOrder}）`,
+      value: (
+        <>
+          {shop.hours}（ラストオーダー {shop.lastOrder}）
+          <span className="block text-xs leading-relaxed text-wood-deep">
+            モーニング {shop.morningHours}／ランチ {shop.lunchHours}／カフェタイム
+            〜18:00
+          </span>
+        </>
+      ),
     },
     {
       label: "定休日",
@@ -34,8 +42,6 @@ export default function ShopInfo({ headingLevel = "h2" }: { headingLevel?: "h2" 
         </>
       ),
     },
-    { label: "モーニング", value: shop.morningHours },
-    { label: "ランチ", value: shop.lunchHours },
     { label: "駐車場", value: shop.parking },
     {
       label: "Instagram",
