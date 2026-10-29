@@ -3,22 +3,26 @@
  * GitHub Actions（.github/workflows/daily-blog.yml）から実行されます。
  *
  * 実行:  npx tsx scripts/generate-daily-post.ts
+ *        DRY_RUN=1 npx tsx scripts/generate-daily-post.ts（APIを呼ばず、選ばれるテーマとプロンプトを表示）
  * 必要な環境変数:
- *   - ANTHROPIC_API_KEY（必須）
+ *   - ANTHROPIC_API_KEY（必須。DRY_RUN 時は不要）
  *   - ANTHROPIC_MODEL（任意。未設定なら Haiku を使用）
  *
  * 方針:
  *   - コスト削減のためデフォルトは claude-haiku-4-5
  *   - トピックプールから未使用のテーマを選び、重複を避ける
+ *   - 季節テーマは対象月だけ選び、時期を逃さないよう優先する
  *   - 既存記事の title/slug/keywords/description を読み込み、
  *     類似度の高い記事は保存せずに失敗させる（カニバリ防止）
- *   - 店舗事実は下記 SHOP_FACTS のみ参照し、それ以外は書かない（捏造防止）
+ *   - 店舗事実は SHOP_FACTS と src/data/menu.ts、地域の事実は LOCAL_FACTS のみ参照し、
+ *     それ以外は書かない（捏造防止）
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import Anthropic from "@anthropic-ai/sdk";
+import { menuCategories, takeoutExamples, type MenuItem } from "../src/data/menu";
 
 // ---- 設定 -------------------------------------------------------------
 const DEFAULT_MODEL = "claude-haiku-4-5";
@@ -28,7 +32,8 @@ const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
 /**
  * 記事内で参照してよい店舗事実（これ以外の店舗情報は書かせない）。
- * 変更があったら src/data/shop.ts / menu.ts と合わせて更新すること。
+ * メニューと価格は src/data/menu.ts から自動で読み込むため、ここには書かない。
+ * 営業時間などを変えたときは src/data/shop.ts と合わせて更新すること。
  */
 const SHOP_FACTS = [
   "店名：ぼんじゅうる珈琲（岡山県倉敷市玉島柏島6988-3の喫茶店）",
@@ -55,6 +60,39 @@ const SEASONAL_FACTS: { fact: string; validUntil: string }[] = [
     validUntil: "2027-02-28",
   },
 ];
+
+/**
+ * 地域について書いてよい事実。これ以外の地名・施設情報は書かせない。
+ * 公式観光サイト等で確認済みのもののみ。追加するときも必ず出典で確認すること。
+ *   円通寺公園: https://www.okayama-kanko.jp/spot/10283
+ *   玉島町並み保存地区: https://www.okayama-kanko.jp/spot/10304
+ *   沙美海水浴場: https://rurubu.jp/andmore/spot/80033800
+ *   玉島みなと公園: https://www.pa.cgr.mlit.go.jp/minato-oasis/pdf/tamashima-pamphlet.pdf
+ */
+const LOCAL_FACTS = [
+  "円通寺：倉敷市玉島柏島（当店と同じ柏島地区）にある寺院。江戸時代の寛政年間に僧・良寛が修行した寺として知られる",
+  "円通寺公園：円通寺を中心に広がる公園で、岡山県指定の名勝。約500本の桜があり、3月下旬〜4月上旬が見ごろ。白華山の山頂周辺から瀬戸内海の島々を望める",
+  "玉島の町並み保存地区：もとは瀬戸内海の小さな島々で、江戸時代に備中松山藩の新田開発で陸地になった。元禄のころには北前船と高瀬舟の水運で港町として栄えた。虫籠窓や格子、漆喰壁・なまこ壁の商家や土蔵が残る",
+  "玉島みなと公園：玉島港に面した公園。当店の近くにある",
+  "沙美海岸（沙美海水浴場）：倉敷市玉島黒崎にある遠浅の海岸で、「日本の渚百選」に選ばれている",
+] as const;
+
+function formatMenuItem(i: MenuItem): string {
+  const price = i.price === null ? "" : ` ${i.price.toLocaleString("ja-JP")}円`;
+  const set = i.priceNote ? `（${i.priceNote}）` : "";
+  const note = i.note ? `［${i.note}］` : "";
+  return `${i.name}${price}${set}${note}`;
+}
+
+/** メニューの事実。期間限定メニューは期限管理のため SEASONAL_FACTS 側で扱う */
+function menuFacts(): string[] {
+  const lines = menuCategories.map((c) => {
+    const foot = c.footnotes?.length ? ` ※${c.footnotes.join(" ※")}` : "";
+    return `メニュー「${c.name}」（店内価格・税込）：${c.items.map(formatMenuItem).join("、")}${foot}`;
+  });
+  lines.push(`テイクアウト価格の例（税込）：${takeoutExamples.map(formatMenuItem).join("、")}`);
+  return lines;
+}
 
 const INSTAGRAM_URL = "https://www.instagram.com/bonjourcoffee2026/";
 
@@ -83,6 +121,10 @@ type Topic = {
   theme: string;
   slugBase: string;
   category: string;
+  /** 季節テーマ: この月（1〜12・日本時間）のあいだだけ選ばれる */
+  months?: number[];
+  /** この記事で特に守ること（捏造しやすい点の注意） */
+  note?: string;
 };
 
 const TOPICS: Topic[] = [
@@ -122,6 +164,69 @@ const TOPICS: Topic[] = [
   { id: "kissaten-erabikata", theme: "居心地のいい喫茶店の見つけ方", slugBase: "kissaten-erabikata", category: "お店のこと" },
   { id: "takeout-katsuyou", theme: "喫茶店テイクアウトの活用シーン", slugBase: "takeout-katsuyou", category: "お店のこと" },
   { id: "douban-hotcake", theme: "銅板で焼くホットケーキの魅力", slugBase: "douban-hotcake", category: "お店のこと" },
+
+  // ==== 追加テーマ（既存テーマ・固定ページと検索意図が重ならないもの） ====
+
+  // --- 珈琲のはなし：家庭でも役立つ基礎知識と、メニューの選び方 ---
+  { id: "coffee-mame-hozon", theme: "珈琲豆の保存方法｜家で香りを長持ちさせるコツ", slugBase: "coffee-mame-hozon", category: "珈琲のはなし", note: "家庭での一般的な保存のコツとして書く。当店で豆を販売しているかどうかには触れない" },
+  { id: "asairi-fukairi", theme: "浅煎りと深煎りの違い｜味と香りの傾向をやさしく解説", slugBase: "asairi-fukairi", category: "珈琲のはなし", note: "一般論として書く。当店の豆の焙煎度合いは、ナポリが深煎りであること以外は書かない" },
+  { id: "coffee-aji-kotoba", theme: "珈琲の「コク」「キレ」「酸味」とは？味を表す言葉の意味", slugBase: "coffee-aji-kotoba", category: "珈琲のはなし" },
+  { id: "straight-blend", theme: "ストレート珈琲とブレンド珈琲の違い", slugBase: "straight-blend", category: "珈琲のはなし", note: "当店のブレンドの配合や豆の産地は書かない" },
+  { id: "cafeole-latte", theme: "カフェオレとカフェラテの違い", slugBase: "cafeole-latte", category: "珈琲のはなし", note: "当店のメニューにあるのはカフェオレ（HOT／ICE）。カフェラテがあるとは書かない" },
+  { id: "coffee-ondo-aji", theme: "珈琲は温度で味が変わる｜淹れたてと少し冷めてからの楽しみ方", slugBase: "coffee-ondo-aji", category: "珈琲のはなし" },
+  { id: "coffee-milk-satou", theme: "ミルクや砂糖の入れ方で変わる、珈琲の楽しみ方", slugBase: "coffee-milk-satou", category: "珈琲のはなし", note: "当店がミルクや砂糖をどう添えているかは書かない" },
+  { id: "coffee-sanchi-kihon", theme: "珈琲は産地で味が変わる？産地ごとの傾向の基本", slugBase: "coffee-sanchi-kihon", category: "珈琲のはなし", note: "産地ごとの一般的な傾向として書く。当店の豆の産地や味（コロンビアを含む）は書かない" },
+  { id: "coffee-mizu", theme: "家で淹れる珈琲は水で味が変わる？", slugBase: "coffee-mizu", category: "珈琲のはなし", note: "家庭向けの一般論として書く。当店で使っている水は書かない" },
+  { id: "uchi-hand-drip", theme: "家でハンドドリップを始めたい人へ｜道具と基本の淹れ方", slugBase: "uchi-hand-drip", category: "珈琲のはなし", note: "家庭向けの一般論として書く。当店の器具・レシピ・豆の分量は書かない" },
+  { id: "coffee-nigate", theme: "苦い珈琲が苦手な人のための、喫茶店での選び方", slugBase: "coffee-nigate", category: "珈琲のはなし" },
+  { id: "cake-coffee-awase", theme: "ケーキに合わせる珈琲の選び方", slugBase: "cake-coffee-awase", category: "珈琲のはなし" },
+  { id: "wa-sweets-coffee", theme: "あんこや抹茶と珈琲は合う？和の甘さとの組み合わせ", slugBase: "wa-sweets-coffee", category: "珈琲のはなし" },
+  { id: "shokugo-coffee", theme: "食後の一杯をおいしく楽しむコツ", slugBase: "shokugo-coffee", category: "珈琲のはなし" },
+  { id: "natsu-tsumetai-drink", theme: "暑い日に飲みたい、喫茶店の冷たいドリンク", slugBase: "natsu-tsumetai-drink", category: "珈琲のはなし", months: [6, 7, 8, 9] },
+  { id: "aki-fukairi", theme: "涼しくなると深煎りの珈琲が恋しくなる理由", slugBase: "aki-fukairi", category: "珈琲のはなし", months: [9, 10, 11] },
+  { id: "fuyu-hot-drink", theme: "寒い日に飲みたい、喫茶店のホットドリンク", slugBase: "fuyu-hot-drink", category: "珈琲のはなし", months: [12, 1, 2], note: "体が温まる等の健康効果を断定しない" },
+
+  // --- モーニング・ランチ：個別メニューの選び方（総合案内は /morning-lunch） ---
+  { id: "banhmi-erabikata", theme: "バインミーの種類と選び方｜その日の気分で選ぶ一本", slugBase: "banhmi-erabikata", category: "モーニング・ランチ", note: "具材はメニューに書かれている範囲で紹介する" },
+  { id: "onigiri-gu-erabikata", theme: "おにぎりの具はどう選ぶ？定番から少し変わった具まで", slugBase: "onigiri-gu-erabikata", category: "モーニング・ランチ" },
+  { id: "banhmi-toast-asa", theme: "バインミートーストとゆで卵、パン派の朝ごはん", slugBase: "banhmi-toast-asa", category: "モーニング・ランチ" },
+  { id: "salad-karume-lunch", theme: "具沢山サラダで軽めのお昼ごはん", slugBase: "salad-karume-lunch", category: "モーニング・ランチ", note: "サラダの具材はメニューに書かれていないので具体的に書かない" },
+  { id: "side-menu-share", theme: "友人とシェアしたい、喫茶店のサイドメニュー", slugBase: "side-menu-share", category: "モーニング・ランチ" },
+  { id: "brunch-kissaten", theme: "遅めの朝ごはん、ブランチを喫茶店で", slugBase: "brunch-kissaten", category: "モーニング・ランチ", note: "モーニングは11時まで、ランチは11時からという時間を正しく書く" },
+
+  // --- カフェでの過ごし方：利用シーン別 ---
+  { id: "dokusho-kissaten", theme: "喫茶店で本を読む時間", slugBase: "dokusho-kissaten", category: "カフェでの過ごし方" },
+  { id: "tomodachi-oshaberi", theme: "友人とのおしゃべりに喫茶店を選ぶ理由", slugBase: "tomodachi-oshaberi", category: "カフェでの過ごし方" },
+  { id: "futari-kissaten", theme: "夫婦やパートナーと、二人で過ごす喫茶店の時間", slugBase: "futari-kissaten", category: "カフェでの過ごし方" },
+  { id: "oya-to-kissaten", theme: "親を誘って、ゆっくり喫茶店で過ごす", slugBase: "oya-to-kissaten", category: "カフェでの過ごし方", note: "段差やバリアフリーなど設備のことは書かない" },
+  { id: "ame-no-hi-kissaten", theme: "雨の日こそ、喫茶店でのんびりと", slugBase: "ame-no-hi-kissaten", category: "カフェでの過ごし方" },
+  { id: "hajimete-kissaten", theme: "初めての喫茶店でも気負わず過ごすコツ", slugBase: "hajimete-kissaten", category: "カフェでの過ごし方", note: "注文・支払い・席の案内など、当店の具体的なルールは書かない" },
+  { id: "machiawase-kissaten", theme: "待ち合わせに喫茶店を使うという選択", slugBase: "machiawase-kissaten", category: "カフェでの過ごし方", note: "予約や席の確保ができるとは書かない" },
+  { id: "yugata-kissaten", theme: "夕方の喫茶店で、一日をゆっくり締めくくる", slugBase: "yugata-kissaten", category: "カフェでの過ごし方", note: "営業は18時まで（ラストオーダー17:30）であることを正しく書く" },
+  { id: "kaimono-kaeri", theme: "買い物帰りに、喫茶店でひと休み", slugBase: "kaimono-kaeri", category: "カフェでの過ごし方" },
+  { id: "shigoto-aima", theme: "仕事の合間に、喫茶店で珈琲休憩", slugBase: "shigoto-aima", category: "カフェでの過ごし方", note: "Wi-Fiや電源の有無など設備のことは書かない" },
+  { id: "hotto-hitoiki", theme: "毎日の中で「ほっと一息」つく時間のつくり方", slugBase: "hotto-hitoiki", category: "カフェでの過ごし方" },
+  { id: "techo-nikki", theme: "喫茶店で手帳や日記を書くひととき", slugBase: "techo-nikki", category: "カフェでの過ごし方" },
+  { id: "haru-sanpo", theme: "春の散歩の途中に、喫茶店でひと休み", slugBase: "haru-sanpo", category: "カフェでの過ごし方", months: [3, 4, 5] },
+  { id: "montblanc-aki", theme: "珈琲と栗のモンブランで、秋のおやつ時間", slugBase: "montblanc-aki", category: "カフェでの過ごし方", months: [9, 10, 11], note: "モンブランを季節限定メニューとは書かない（通年のケーキセット）" },
+  { id: "nenmatsu-hitoyasumi", theme: "年末の慌ただしさの合間に、喫茶店でひと休み", slugBase: "nenmatsu-hitoyasumi", category: "カフェでの過ごし方", months: [12], note: "年末年始の営業日は書かず、Instagramで確認するよう案内する" },
+  { id: "shinnen-kissaten", theme: "新しい年のはじまりに、喫茶店で今年のことを考える", slugBase: "shinnen-kissaten", category: "カフェでの過ごし方", months: [1], note: "年始の営業日は書かず、Instagramで確認するよう案内する" },
+  { id: "choco-dessert-fuyu", theme: "チョコレートのデザートと珈琲で過ごす、冬の午後", slugBase: "choco-dessert-fuyu", category: "カフェでの過ごし方", months: [1, 2], note: "バレンタインなどのキャンペーンやイベントがあるとは書かない" },
+
+  // --- 玉島・倉敷のこと：確認済みの地域情報（LOCAL_FACTS）に基づくもの ---
+  { id: "entsuji-sanpo", theme: "円通寺公園を歩いたあとに、珈琲でひと休み", slugBase: "entsuji-sanpo", category: "玉島・倉敷のこと", note: "円通寺・円通寺公園のことは【地域の事実】の範囲で書く" },
+  { id: "tamashima-machinami", theme: "玉島の町並み保存地区を歩いたあとの一杯", slugBase: "tamashima-machinami", category: "玉島・倉敷のこと", note: "町並みのことは【地域の事実】の範囲で書く" },
+  { id: "tamashima-minato-koen", theme: "玉島みなと公園で港の景色を眺めたあとに", slugBase: "tamashima-minato-koen", category: "玉島・倉敷のこと", note: "公園のことは【地域の事実】の範囲で書く" },
+  { id: "sami-kaigan", theme: "沙美海岸へ出かける日の、行き帰りの喫茶店", slugBase: "sami-kaigan", category: "玉島・倉敷のこと", note: "沙美海岸のことは【地域の事実】の範囲で書く" },
+  { id: "kurashiki-kanko-tamashima", theme: "倉敷観光のついでに、玉島まで足をのばして", slugBase: "kurashiki-kanko-tamashima", category: "玉島・倉敷のこと", note: "倉敷美観地区など他の観光地の施設情報は書かない" },
+  { id: "okayama-kissaten-meguri", theme: "岡山で喫茶店めぐりを楽しむコツ", slugBase: "okayama-kissaten-meguri", category: "玉島・倉敷のこと", note: "他店の名前や情報は書かない。喫茶店めぐりの一般的な楽しみ方として書く" },
+  { id: "jimoto-kissaten", theme: "地元に行きつけの喫茶店があるということ", slugBase: "jimoto-kissaten", category: "玉島・倉敷のこと" },
+  { id: "obon-kisei", theme: "お盆の帰省で、地元の喫茶店に寄る", slugBase: "obon-kisei", category: "玉島・倉敷のこと", months: [8], note: "お盆の営業日は書かず、Instagramで確認するよう案内する" },
+
+  // --- お店のこと：メニューの楽しみ方 ---
+  { id: "coffee-igai-drink", theme: "珈琲が飲めない人も楽しめる、喫茶店の紅茶とドリンク", slugBase: "coffee-igai-drink", category: "お店のこと" },
+  { id: "kodomo-menu-erabi", theme: "子どもと一緒に選びたい、喫茶店のメニュー", slugBase: "kodomo-menu-erabi", category: "お店のこと", note: "キッズメニューや子ども用の椅子・食器があるとは書かない" },
+  { id: "takeout-coffee-oishiku", theme: "テイクアウトの珈琲をおいしく飲むコツ", slugBase: "takeout-coffee-oishiku", category: "お店のこと", note: "容器やサイズなど当店のテイクアウトの仕様は書かない" },
 ];
 
 // ---- ユーティリティ ---------------------------------------------------
@@ -165,19 +270,32 @@ function readExistingPosts(): ExistingPost[] {
     });
 }
 
-/** 未使用トピックを優先し、全て使用済みなら最も古いものを選ぶ */
-function pickTopic(existing: ExistingPost[]): { topic: Topic; fresh: boolean } {
+function inSeason(topic: Topic, month: number): boolean {
+  return !topic.months || topic.months.includes(month);
+}
+
+/**
+ * 今月書けるテーマのうち未使用のものを優先し、全て使用済みなら最も古いものを選ぶ。
+ * 季節テーマは対象月を逃すと翌年まで書けないため、未使用の通年テーマより先に選ぶ。
+ */
+function pickTopic(
+  existing: ExistingPost[],
+  month: number,
+): { topic: Topic; fresh: boolean } {
   const used = new Map<string, string>();
   for (const p of existing) {
     if (p.topicId && (!used.has(p.topicId) || p.date > (used.get(p.topicId) ?? "")))
       used.set(p.topicId, p.date);
   }
-  const unused = TOPICS.filter((t) => !used.has(t.id));
+  const eligible = TOPICS.filter((t) => inSeason(t, month));
+  const unused = eligible.filter((t) => !used.has(t.id));
+  const unusedSeasonal = unused.find((t) => t.months);
+  if (unusedSeasonal) return { topic: unusedSeasonal, fresh: true };
   if (unused.length > 0) {
     const idx = used.size % unused.length;
     return { topic: unused[idx], fresh: true };
   }
-  const sorted = [...TOPICS].sort(
+  const sorted = [...eligible].sort(
     (a, b) => (used.get(a.id) ?? "").localeCompare(used.get(b.id) ?? ""),
   );
   return { topic: sorted[0], fresh: false };
@@ -259,8 +377,9 @@ function normalizeLinks(body: string, existingSlugs: Set<string>): string {
 
 // ---- メイン -----------------------------------------------------------
 async function main() {
+  const dryRun = process.env.DRY_RUN === "1";
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  if (!apiKey && !dryRun) {
     console.error("ERROR: ANTHROPIC_API_KEY が設定されていません。");
     process.exit(1);
   }
@@ -268,8 +387,8 @@ async function main() {
   fs.mkdirSync(BLOG_DIR, { recursive: true });
 
   const existing = readExistingPosts();
-  const { topic, fresh } = pickTopic(existing);
   const date = today();
+  const { topic, fresh } = pickTopic(existing, Number(date.slice(5, 7)));
   const slug = uniqueSlug(topic.slugBase);
 
   console.log("──────────────────────────────────────────────");
@@ -284,9 +403,10 @@ async function main() {
   const activeSeasonalFacts = SEASONAL_FACTS.filter((s) => date <= s.validUntil).map(
     (s) => s.fact,
   );
-  const factList = [...SHOP_FACTS, ...activeSeasonalFacts]
+  const factList = [...SHOP_FACTS, ...menuFacts(), ...activeSeasonalFacts]
     .map((f) => `- ${f}`)
     .join("\n");
+  const localFactList = LOCAL_FACTS.map((f) => `- ${f}`).join("\n");
   const recentTitles = existing
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 20)
@@ -314,10 +434,15 @@ async function main() {
     "- リストにない商品名・価格・営業時間・定休日・設備・キャンペーン・イベント・口コミ・スタッフ情報・受賞歴・仕入先・珈琲豆の産地・焙煎方法・予約情報を創作することは絶対に禁止",
     "- メニュー名から味・材料・作り方を推測して断定しない（例：「ナポリ珈琲＝チョコレートを混ぜた珈琲」のような誤った説明は禁止）。個々の商品の味や作り方は、上記リストに書かれている範囲でのみ述べる",
     "- 分からないことは書かない。一般論として書ける内容（珈琲の楽しみ方など）は一般論として書く",
-    "- 玉島・倉敷の観光情報や周辺施設について、確実でない固有名詞・情報を創作しない。地域の話題は一般的な範囲にとどめる",
+    "- 地名・施設について書いてよい事実は、下記の「地域の事実」リストにあるものだけ。それ以外の固有名詞や観光情報は創作しない",
+    "- 距離・所要時間・営業時間・料金・開設期間・イベント日程は変わりやすいので、店舗のものを除き書かない",
+    "- 価格は「店舗の事実」にある店内価格を使う。テイクアウト価格と混同しない",
     "",
     "【店舗の事実】",
     factList,
+    "",
+    "【地域の事実】",
+    localFactList,
     "",
     "【内部リンク】",
     "- 本文中に、文脈に合う内部リンクを2〜4個、Markdownリンク（[表示テキスト](URL)）で自然に挿入する",
@@ -333,6 +458,7 @@ async function main() {
 
   const user = [
     `今日の記事テーマ：「${topic.theme}」`,
+    topic.note ? `この記事で守ること：${topic.note}` : "",
     fresh
       ? ""
       : "※このテーマは過去に一度書いています。前回とは異なる切り口・見出し構成で、新しい観点から書き直してください。",
@@ -348,6 +474,13 @@ async function main() {
     '  "body": "Markdown本文（frontmatterやH1は含めない。## と ### の見出し、導入・本文・まとめ、内部リンクを含む1800〜2600字）"',
     "}",
   ].join("\n");
+
+  if (dryRun) {
+    console.log(system);
+    console.log("──────────────────────────────────────────────");
+    console.log(user);
+    return;
+  }
 
   const client = new Anthropic({ apiKey });
   const res = await client.messages.create({
