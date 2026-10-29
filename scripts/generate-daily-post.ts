@@ -56,6 +56,8 @@ const SEASONAL_FACTS: { fact: string; validUntil: string }[] = [
   },
 ];
 
+const INSTAGRAM_URL = "https://www.instagram.com/bonjourcoffee2026/";
+
 /** 内部リンク（実在するページのみ） */
 const INTERNAL_LINKS = [
   { url: "/coffee", label: "珈琲へのこだわり" },
@@ -221,6 +223,40 @@ function cleanBody(body: string): string {
   return b;
 }
 
+/**
+ * モデルは内部リンクに架空ドメイン付きの絶対URL（example.com 等）や
+ * 先頭スラッシュなしのパスを書くことがあるため、実在ページへの相対パスに直す。
+ * 行き先が実在しないリンクは、リンクを外して表示テキストだけ残す。
+ */
+function normalizeLinks(body: string, existingSlugs: Set<string>): string {
+  const pages = new Set(["/", "/blog", ...INTERNAL_LINKS.map((l) => l.url)]);
+  return body.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_whole, text: string, raw: string) => {
+    let url = raw.trim();
+    if (url.startsWith("#")) return text;
+    if (/^https?:\/\//i.test(url)) {
+      let parsed: URL;
+      try {
+        parsed = new URL(url);
+      } catch {
+        return text;
+      }
+      if (parsed.hostname.replace(/^www\./, "") === "instagram.com") {
+        return `[${text}](${INSTAGRAM_URL})`;
+      }
+      url = parsed.pathname + parsed.hash;
+    } else if (!url.startsWith("/")) {
+      url = `/${url}`;
+    }
+    const [pathPart, hash] = url.split("#");
+    const p = pathPart.replace(/\/+$/, "") || "/";
+    if (pages.has(p)) return `[${text}](${hash ? `${p}#${hash}` : p})`;
+    if (p.startsWith("/blog/") && existingSlugs.has(p.slice("/blog/".length))) {
+      return `[${text}](${p})`;
+    }
+    return text;
+  });
+}
+
 // ---- メイン -----------------------------------------------------------
 async function main() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -286,6 +322,8 @@ async function main() {
     "【内部リンク】",
     "- 本文中に、文脈に合う内部リンクを2〜4個、Markdownリンク（[表示テキスト](URL)）で自然に挿入する",
     "- アンカーテキストは具体的にし、「こちら」は使わない。毎回同じ文言にしない",
+    "- URLは下記の相対パスをそのまま書く（https:// やドメイン名を付けない。下記以外のURLを作らない）",
+    `- Instagramへ案内する場合のみ、URLに ${INSTAGRAM_URL} を使ってよい`,
     linkList,
     "",
     "【キーワードのすみ分け】",
@@ -339,7 +377,8 @@ async function main() {
   const keywords = Array.isArray(parsed.keywords)
     ? parsed.keywords.map((t) => String(t).trim()).filter(Boolean).slice(0, 6)
     : [];
-  const body = cleanBody(String(parsed.body ?? ""));
+  const existingSlugs = new Set(existing.map((p) => p.slug));
+  const body = normalizeLinks(cleanBody(String(parsed.body ?? "")), existingSlugs);
 
   if (!title || body.length < 500) {
     throw new Error(
