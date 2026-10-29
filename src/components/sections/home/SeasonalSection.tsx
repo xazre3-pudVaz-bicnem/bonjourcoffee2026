@@ -31,7 +31,8 @@ export default function SeasonalSection() {
             Seasonal
           </p>
           <h2 className="mt-1 font-heading text-2xl font-bold tracking-wide sm:text-3xl">
-            期間限定「{item.name}」この冬も販売します
+            <span className="inline-block">期間限定「{item.name}」</span>
+            <span className="inline-block">この冬も販売します</span>
           </h2>
           <p className="mt-5 text-sm leading-loose text-espresso sm:text-base">
             明太子のペーストをたっぷり塗って、香ばしく焼き上げたフランスパンです。単品590円（税込）。ご好評につき、10月末までの予定だった販売を延長し、この冬も引き続きお楽しみいただけることになりました。淹れたての珈琲と一緒に、ぜひどうぞ。
